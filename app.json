@@ -13,7 +13,10 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "plugins": ["expo-secure-store", "expo-web-browser"],
+    "plugins": [
+      "expo-secure-store",
+      "expo-web-browser"
+    ],
     "ios": {
       "supportsTablet": true
     },
@@ -23,10 +26,16 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.mhaadiabu.upsabridgerebuild"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "4c120dd0-e0c7-4ac9-8037-4b937524638f"
+      }
     }
   }
 }
