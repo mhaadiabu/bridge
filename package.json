@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@clerk/expo": "3.1.6",
+    "@clerk/expo": "~3.2.0",
     "@t3-oss/env-core": "^0.13.8",
     "convex": "1.36.1",
     "expo": "~54.0.34",
