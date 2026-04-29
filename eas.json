@@ -5,8 +5,7 @@
   "build": {
     "preview": {
       "android": {
-        "buildType": "apk",
-        "prebuildCommand": "npm run typecheck"
+        "buildType": "apk"
       }
     },
     "production": {
