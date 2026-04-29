@@ -1,12 +1,13 @@
-import { useAuth, useClerk } from "@clerk/expo";
+import { useClerk } from "@clerk/expo";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
+import { useRouter } from "expo-router";
 import { useMutation, useQuery } from "convex/react";
 import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 import { AppShell } from "@/components/AppShell";
-import { Panel } from "@/components/Panel";
+import { StateScreen } from "@/components/StateScreen";
 import { Screen } from "@/components/Screen";
 import { ActivityLog } from "@/components/admin/ActivityLog";
 import { DataTools } from "@/components/admin/DataTools";
@@ -20,25 +21,20 @@ import { NudgeCenter } from "@/components/student/NudgeCenter";
 import { ProgressCards } from "@/components/student/ProgressCards";
 import { StudentOnboarding } from "@/components/student/StudentOnboarding";
 import type { AssignmentStatusFilter, DashboardView } from "@/types/dashboard";
-import { colors } from "@/theme";
-import { SignInScreen } from "@/screens/SignInScreen";
-import { SignUpScreen } from "@/screens/SignUpScreen";
-import { AssignmentDetailScreen } from "@/screens/AssignmentDetailScreen";
 
 function studentStatusToApiFilter(status: AssignmentStatusFilter) {
   if (status === "all") {
     return undefined;
   }
+
   return status;
 }
 
-export function RootApp() {
-  const { isLoaded, isSignedIn } = useAuth();
+export function DashboardScreen() {
+  const router = useRouter();
   const { signOut } = useClerk();
-  const [authMode, setAuthMode] = useState<"sign-in" | "sign-up">("sign-in");
   const [activeView, setActiveView] = useState<DashboardView>("student");
   const [assignmentFilter, setAssignmentFilter] = useState<AssignmentStatusFilter>("all");
-  const [selectedAssignmentId, setSelectedAssignmentId] = useState<string | null>(null);
   const [selectedExperimentId, setSelectedExperimentId] = useState<Id<"experiments"> | null>(null);
   const [hasEnsuredProfile, setHasEnsuredProfile] = useState(false);
 
@@ -73,16 +69,18 @@ export function RootApp() {
   );
 
   useEffect(() => {
-    if (!isSignedIn || hasEnsuredProfile) {
+    if (hasEnsuredProfile) {
       return;
     }
+
     void ensureViewer().finally(() => setHasEnsuredProfile(true));
-  }, [ensureViewer, hasEnsuredProfile, isSignedIn]);
+  }, [ensureViewer, hasEnsuredProfile]);
 
   useEffect(() => {
     if (!viewer || !experiments || selectedExperimentId || experiments.length === 0) {
       return;
     }
+
     setSelectedExperimentId(experiments[0]._id);
   }, [experiments, selectedExperimentId, viewer]);
 
@@ -90,49 +88,15 @@ export function RootApp() {
     if (!assignments) {
       return [];
     }
+
     return assignments.map((assignment) => ({
       ...assignment,
       submittedAt: assignment.submittedAt ?? null,
     }));
   }, [assignments]);
 
-  if (!isLoaded) {
-    return (
-      <Screen scrollable={false}>
-        <View style={styles.centered}>
-          <ActivityIndicator color={colors.primary} />
-          <Text style={styles.mutedText}>Loading UPSA Bridge...</Text>
-        </View>
-      </Screen>
-    );
-  }
-
-  if (!isSignedIn) {
-    return authMode === "sign-in" ? (
-      <SignInScreen onSwitchMode={() => setAuthMode("sign-up")} />
-    ) : (
-      <SignUpScreen onSwitchMode={() => setAuthMode("sign-in")} />
-    );
-  }
-
   if (!viewer) {
-    return (
-      <Screen scrollable={false}>
-        <View style={styles.centered}>
-          <ActivityIndicator color={colors.primary} />
-          <Text style={styles.mutedText}>Bootstrapping profile...</Text>
-        </View>
-      </Screen>
-    );
-  }
-
-  if (selectedAssignmentId) {
-    return (
-      <AssignmentDetailScreen
-        assignmentRecipientId={selectedAssignmentId}
-        onBack={() => setSelectedAssignmentId(null)}
-      />
-    );
+    return <StateScreen title="Bootstrapping profile..." loading />;
   }
 
   const canAccessAdmin = viewer.role === "admin" || viewer.role === "researcher";
@@ -167,7 +131,16 @@ export function RootApp() {
             />
             <ProgressCards data={progress ?? undefined} />
             <AssignmentFilters value={assignmentFilter} onChange={setAssignmentFilter} />
-            <AssignmentList items={normalizedAssignments} isLoading={!assignments} onSelect={setSelectedAssignmentId} />
+            <AssignmentList
+              items={normalizedAssignments}
+              isLoading={!assignments}
+              onSelect={(assignmentRecipientId) => {
+                router.push({
+                  pathname: "/assignments/[assignmentRecipientId]",
+                  params: { assignmentRecipientId },
+                });
+              }}
+            />
             <NudgeCenter
               items={nudges ?? undefined}
               onGenerate={() => {
@@ -229,19 +202,7 @@ export function RootApp() {
 }
 
 const styles = StyleSheet.create({
-  centered: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 12,
-    padding: 24,
-  },
   stack: {
     gap: 12,
-  },
-  mutedText: {
-    color: colors.textMuted,
-    fontSize: 13,
-    marginTop: 4,
   },
 });

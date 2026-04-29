@@ -1,47 +1,57 @@
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Panel } from "@/components/Panel";
 import { Screen } from "@/components/Screen";
+import { StateScreen } from "@/components/StateScreen";
 import { getStatusLabel } from "@/utils/assignmentPresentation";
 import { formatShortDate } from "@/utils/format";
 import { colors } from "@/theme";
 
-type AssignmentDetailScreenProps = {
-  assignmentRecipientId: string;
-  onBack: () => void;
-};
+export function AssignmentDetailScreen() {
+  const router = useRouter();
+  const { assignmentRecipientId } = useLocalSearchParams<{ assignmentRecipientId: string | string[] }>();
+  const assignmentRecipientValue = Array.isArray(assignmentRecipientId)
+    ? assignmentRecipientId[0]
+    : assignmentRecipientId;
+  const assignmentRecipientDocId = assignmentRecipientValue as Id<"assignmentRecipients"> | undefined;
 
-export function AssignmentDetailScreen({ assignmentRecipientId, onBack }: AssignmentDetailScreenProps) {
-  const assignmentRecipientDocId = assignmentRecipientId as Id<"assignmentRecipients">;
-  const assignmentDetail = useQuery(api.assignments.getDetail, {
-    assignmentRecipientId: assignmentRecipientDocId,
-  });
+  const assignmentDetail = useQuery(
+    api.assignments.getDetail,
+    assignmentRecipientDocId ? { assignmentRecipientId: assignmentRecipientDocId } : "skip",
+  );
 
   const markViewed = useMutation(api.assignments.markViewed);
   const recordSubmission = useMutation(api.assignments.recordSubmission);
 
   useEffect(() => {
+    if (!assignmentRecipientDocId) {
+      return;
+    }
+
     void markViewed({ assignmentRecipientId: assignmentRecipientDocId });
   }, [assignmentRecipientDocId, markViewed]);
 
+  if (!assignmentRecipientDocId) {
+    return <StateScreen title="Assignment unavailable" message="The assignment link is missing or invalid." />;
+  }
+
   if (!assignmentDetail) {
-    return (
-      <Screen scrollable={false}>
-        <View style={styles.centered}>
-          <ActivityIndicator color={colors.primary} />
-          <Text style={styles.mutedText}>Loading assignment details...</Text>
-        </View>
-      </Screen>
-    );
+    return <StateScreen title="Loading assignment details..." loading />;
   }
 
   return (
     <Screen>
-      <Pressable onPress={onBack} style={styles.backButton}>
+      <Pressable
+        onPress={() => {
+          router.replace("/");
+        }}
+        style={styles.backButton}
+      >
         <Text style={styles.backButtonText}>Back</Text>
       </Pressable>
 
@@ -83,12 +93,6 @@ export function AssignmentDetailScreen({ assignmentRecipientId, onBack }: Assign
 }
 
 const styles = StyleSheet.create({
-  centered: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 12,
-  },
   backButton: {
     alignSelf: "flex-start",
     marginBottom: 8,

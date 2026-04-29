@@ -1,19 +1,16 @@
-import { isClerkAPIResponseError, useAuth } from "@clerk/expo";
-import { useSignUp } from "@clerk/expo/legacy";
+import { isClerkAPIResponseError, useSignUp } from "@clerk/expo";
+import { Link, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { Panel } from "@/components/Panel";
 import { Screen } from "@/components/Screen";
+import { StateScreen } from "@/components/StateScreen";
 import { colors } from "@/theme";
 
-type SignUpScreenProps = {
-  onSwitchMode: () => void;
-};
-
-export function SignUpScreen({ onSwitchMode }: SignUpScreenProps) {
+export function SignUpScreen() {
+  const router = useRouter();
   const { isLoaded, signUp, setActive } = useSignUp();
-  const { isSignedIn } = useAuth();
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
@@ -24,9 +21,11 @@ export function SignUpScreen({ onSwitchMode }: SignUpScreenProps) {
     if (isClerkAPIResponseError(error)) {
       return error.errors[0]?.longMessage ?? error.errors[0]?.message ?? "Unable to continue sign-up.";
     }
+
     if (error instanceof Error) {
       return error.message;
     }
+
     return "Unable to continue sign-up.";
   }, []);
 
@@ -36,15 +35,17 @@ export function SignUpScreen({ onSwitchMode }: SignUpScreenProps) {
         setStatusMessage("Account created but session activation failed.");
         return;
       }
+
       await setActive({
         session: sessionId,
       });
+      router.replace("/");
     },
-    [setActive],
+    [router, setActive],
   );
 
-  if (isSignedIn || !isLoaded || !signUp) {
-    return null;
+  if (!isLoaded || !signUp) {
+    return <StateScreen title="Loading sign-up..." loading />;
   }
 
   const handleSubmit = async () => {
@@ -104,9 +105,7 @@ export function SignUpScreen({ onSwitchMode }: SignUpScreenProps) {
         <Panel style={styles.card}>
           <Text style={styles.title}>{awaitingVerification ? "Verify your account" : "Create account"}</Text>
           <Text style={styles.subtitle}>
-            {awaitingVerification
-              ? "Enter the email verification code."
-              : "Set up your UPSA Bridge profile."}
+            {awaitingVerification ? "Enter the email verification code." : "Set up your UPSA Bridge profile."}
           </Text>
 
           {statusMessage ? <Text style={styles.message}>{statusMessage}</Text> : null}
@@ -128,6 +127,7 @@ export function SignUpScreen({ onSwitchMode }: SignUpScreenProps) {
             <>
               <TextInput
                 autoCapitalize="none"
+                autoCorrect={false}
                 value={emailAddress}
                 placeholder="student@upsa.edu.gh"
                 placeholderTextColor={colors.textMuted}
@@ -144,7 +144,11 @@ export function SignUpScreen({ onSwitchMode }: SignUpScreenProps) {
                 style={styles.input}
               />
               <PrimaryButton label={isSubmitting ? "Creating..." : "Sign up"} onPress={handleSubmit} />
-              <SecondaryButton label="Already registered? Sign in" onPress={onSwitchMode} />
+              <Link href="/sign-in" asChild>
+                <Pressable style={styles.secondaryButton}>
+                  <Text style={styles.secondaryButtonText}>Already registered? Sign in</Text>
+                </Pressable>
+              </Link>
               <View nativeID="clerk-captcha" />
             </>
           )}

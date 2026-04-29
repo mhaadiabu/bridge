@@ -1,7 +1,7 @@
 {
   "name": "upsa-bridge-rebuild",
   "version": "1.0.0",
-  "main": "index.ts",
+  "main": "expo-router/entry",
   "scripts": {
     "start": "cross-env EXPO_NO_DEPENDENCY_VALIDATION=1 expo start",
     "convex:dev": "convex dev",
@@ -16,6 +16,8 @@
     "expo-auth-session": "~7.0.8",
     "expo-build-properties": "~1.0.10",
     "expo-constants": "~18.0.13",
+    "expo-linking": "~8.0.12",
+    "expo-router": "~6.0.23",
     "expo-crypto": "~15.0.7",
     "expo-secure-store": "~15.0.8",
     "expo-status-bar": "~3.0.9",
@@ -25,6 +27,7 @@
     "react-native": "0.81.5",
     "react-native-gesture-handler": "~2.28.0",
     "react-native-safe-area-context": "~5.6.2",
+    "react-native-screens": "~4.23.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

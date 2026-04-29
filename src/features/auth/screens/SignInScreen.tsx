@@ -1,17 +1,15 @@
-import { isClerkAPIResponseError } from "@clerk/expo";
-import { useSignIn } from "@clerk/expo/legacy";
+import { isClerkAPIResponseError, useSignIn } from "@clerk/expo";
+import { Link, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { Panel } from "@/components/Panel";
 import { Screen } from "@/components/Screen";
+import { StateScreen } from "@/components/StateScreen";
 import { colors } from "@/theme";
 
-type SignInScreenProps = {
-  onSwitchMode: () => void;
-};
-
-export function SignInScreen({ onSwitchMode }: SignInScreenProps) {
+export function SignInScreen() {
+  const router = useRouter();
   const { isLoaded, signIn, setActive } = useSignIn();
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
@@ -24,6 +22,7 @@ export function SignInScreen({ onSwitchMode }: SignInScreenProps) {
     if (!isLoaded || !signIn) {
       return;
     }
+
     if (signIn.status === "needs_second_factor" || signIn.status === "needs_client_trust") {
       setRequiresEmailCode(true);
     }
@@ -33,9 +32,11 @@ export function SignInScreen({ onSwitchMode }: SignInScreenProps) {
     if (isClerkAPIResponseError(error)) {
       return error.errors[0]?.longMessage ?? error.errors[0]?.message ?? "Authentication failed.";
     }
+
     if (error instanceof Error) {
       return error.message;
     }
+
     return "Authentication failed.";
   }, []);
 
@@ -49,15 +50,16 @@ export function SignInScreen({ onSwitchMode }: SignInScreenProps) {
       await setActive({
         session: sessionId,
       });
+      router.replace("/");
     },
-    [setActive],
+    [router, setActive],
   );
 
-  const handleSubmit = async () => {
-    if (!isLoaded || !signIn) {
-      return;
-    }
+  if (!isLoaded || !signIn) {
+    return <StateScreen title="Loading sign-in..." loading />;
+  }
 
+  const handleSubmit = async () => {
     setStatusMessage(null);
     setIsSubmitting(true);
 
@@ -76,6 +78,7 @@ export function SignInScreen({ onSwitchMode }: SignInScreenProps) {
         const emailCodeFactor = result.supportedSecondFactors?.find(
           (factor) => factor.strategy === "email_code",
         );
+
         if (!emailCodeFactor) {
           setStatusMessage("Second factor is required, but email code is not enabled for this account.");
           return;
@@ -98,10 +101,6 @@ export function SignInScreen({ onSwitchMode }: SignInScreenProps) {
   };
 
   const handleResendCode = async () => {
-    if (!isLoaded || !signIn) {
-      return;
-    }
-
     try {
       await signIn.prepareSecondFactor({ strategy: "email_code" });
       setStatusMessage("A new verification code was sent.");
@@ -111,9 +110,6 @@ export function SignInScreen({ onSwitchMode }: SignInScreenProps) {
   };
 
   const handleVerify = async () => {
-    if (!isLoaded || !signIn) {
-      return;
-    }
     setStatusMessage(null);
     setIsSubmitting(true);
 
@@ -166,6 +162,7 @@ export function SignInScreen({ onSwitchMode }: SignInScreenProps) {
             <>
               <TextInput
                 autoCapitalize="none"
+                autoCorrect={false}
                 value={emailAddress}
                 placeholder="student@upsa.edu.gh"
                 placeholderTextColor={colors.textMuted}
@@ -182,7 +179,11 @@ export function SignInScreen({ onSwitchMode }: SignInScreenProps) {
                 style={styles.input}
               />
               <PrimaryButton label={isSubmitting ? "Signing in..." : "Sign in"} onPress={handleSubmit} />
-              <SecondaryButton label="Create account" onPress={onSwitchMode} />
+              <Link href="/sign-up" asChild>
+                <Pressable style={styles.secondaryButton}>
+                  <Text style={styles.secondaryButtonText}>Create account</Text>
+                </Pressable>
+              </Link>
             </>
           )}
         </Panel>
