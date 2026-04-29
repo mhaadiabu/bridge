@@ -6,12 +6,12 @@
     "preview": {
       "android": {
         "buildType": "apk",
-        "gradleCommand": ":app:assembleRelease"
+        "prebuildCommand": "npm run typecheck"
       }
     },
     "production": {
       "android": {
-        "buildType": "apk"
+        "buildType": "aab"
       }
     }
   },
