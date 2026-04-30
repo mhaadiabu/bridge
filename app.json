@@ -21,7 +21,7 @@
         "expo-build-properties",
         {
           "android": {
-            "gradle": "8.0.1"
+            "gradle": "8.10.2"
           }
         }
       ]
