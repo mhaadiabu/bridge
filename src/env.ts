@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const publicEnvSchema = z.object({
-  EXPO_PUBLIC_CONVEX_URL: z.url(),
+  EXPO_PUBLIC_CONVEX_URL: z.string().url(),
   EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1),
 });
 

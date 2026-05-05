@@ -15,21 +15,7 @@
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store",
-      "expo-web-browser",
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "gradle": "8.10.2",
-            "compileSdkVersion": 35,
-            "targetSdkVersion": 35,
-            "minSdkVersion": 24,
-            "buildToolsVersion": "35.0.0",
-            "ndkVersion": "26.1.10909125"
-          }
-        }
-      ]
+      "expo-secure-store"
     ],
     "ios": {
       "supportsTablet": true

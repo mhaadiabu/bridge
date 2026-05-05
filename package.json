@@ -3,10 +3,16 @@
   "version": "1.0.0",
   "main": "expo-router/entry",
   "scripts": {
-    "start": "cross-env EXPO_NO_DEPENDENCY_VALIDATION=1 expo start",
+    "prestart": "node -e \"const [major, minor] = process.versions.node.split('.').map(Number); if (major < 20 || (major === 20 && minor < 9) || major >= 24) { console.error('Unsupported Node.js ' + process.version + ' for this Expo SDK 54 project on Windows. Use Node 20.9+ or 22.x (avoid Node 24 for now).'); process.exit(1); }\"",
+    "start": "cross-env EXPO_NO_DEPENDENCY_VALIDATION=1 expo start --tunnel",
+    "start:lan": "cross-env EXPO_NO_DEPENDENCY_VALIDATION=1 expo start --lan",
+    "start:localhost": "cross-env EXPO_NO_DEPENDENCY_VALIDATION=1 expo start --localhost",
     "convex:dev": "convex dev",
     "convex:setup": "convex dev --configure --until-success",
     "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20.9.0 <24"
   },
   "dependencies": {
     "@clerk/expo": "~3.2.0",

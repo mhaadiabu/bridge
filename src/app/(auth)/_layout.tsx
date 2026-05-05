@@ -1,23 +1,18 @@
-import { SignedIn, SignedOut, useAuth } from "@clerk/expo";
+import { useAuth } from "@clerk/expo";
 import { Redirect, Stack } from "expo-router";
 
 import { StateScreen } from "@/components/StateScreen";
 
 export default function AuthLayout() {
-  const { isLoaded } = useAuth();
+  const { isLoaded, isSignedIn } = useAuth();
 
   if (!isLoaded) {
     return <StateScreen title="Loading UPSA Bridge..." loading />;
   }
 
-  return (
-    <>
-      <SignedOut>
-        <Stack screenOptions={{ headerShown: false }} />
-      </SignedOut>
-      <SignedIn>
-        <Redirect href="/" />
-      </SignedIn>
-    </>
-  );
+  if (isSignedIn) {
+    return <Redirect href="/" />;
+  }
+
+  return <Stack screenOptions={{ headerShown: false }} />;
 }
