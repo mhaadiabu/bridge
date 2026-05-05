@@ -9,7 +9,9 @@
     "start:localhost": "cross-env EXPO_NO_DEPENDENCY_VALIDATION=1 expo start --localhost",
     "convex:dev": "convex dev",
     "convex:setup": "convex dev --configure --until-success",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "engines": {
     "node": ">=20.9.0 <24"
